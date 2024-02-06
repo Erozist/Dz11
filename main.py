@@ -8,13 +8,11 @@ class Field:
 
     @property
     def value(self):
-        print('Getattr')
         return self.__value
 
     @value.setter
     def value(self, new_value):
         self.__value = new_value
-        print('Setter')
 
     def __str__(self):
         return str(self.__value)
@@ -36,20 +34,15 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         Field.__init__(self, value)
-        if value == None:
+        if bool(datetime.strptime(str(value), '%d.%m.%Y')):
             pass
-        elif len(value) == 10 and value[0:2].isdigit() and value[3:5].isdigit()\
-                and value[6:10].isdigit() and value[2] == '.' and value[5] == '.':
-            pass
-        else:
-            raise ValueError('Incorrect date of birth format!')
 
 
 class Record:
     def __init__(self, name, day_birthday=None):
         self.name = Name(name)
         self.phones = []
-        self.day_birthday = Birthday(day_birthday)
+        self.day_birthday = Birthday(day_birthday) if day_birthday else None
 
 
     def add_phone(self, num):
@@ -59,13 +52,13 @@ class Record:
 
     def remove_phone(self, num):
         for i, phone in enumerate(self.phones):
-            if num in phone.value:
-                del self.phones[i] #self.phones.remove(num)
+            if num == phone.value:
+                del self.phones[i]
 
 
     def edit_phone(self, old_num, new_num):
         for i, phone in enumerate(self.phones):
-            if old_num in phone.value:
+            if old_num == phone.value:
                 self.phones[i] = Phone(new_num)
                 return self.phones
         raise ValueError('This phone does not exist')
@@ -73,7 +66,7 @@ class Record:
 
     def find_phone(self, num):
         for phone in self.phones:
-            if num in phone.value:
+            if num == phone.value:
                 return Phone(num)
         return None
 
@@ -82,16 +75,13 @@ class Record:
         birth = datetime.strptime(str(self.day_birthday), '%d.%m.%Y').date()
         birth = birth.replace(year=today.year)
         if birth == today:
-            print('There are 0 days left until the birthday. Happy Birthday!')
+            return 0
         else:
             if birth < today:
                 birth = birth.replace(year=today.year + 1)
-                days_before = birth - today
-                print(f'There are {days_before.days} days left until the birthday.')
+                return birth - today
 
-            else:
-                days_before = birth - today
-                print(f'There are {days_before.days} days left until the birthday.')
+            return birth - today
 
 
     def __str__(self):
@@ -111,16 +101,14 @@ class AddressBook(UserDict):
 
 
     def delete(self, name):
-        delete_value = self.data.pop(name, 'No Key found')
-        print(f'{delete_value} -- Deleted!')
+        self.data.pop(name, 'No Key found')
+
 
     def iterator(self, num):
         i = 0
         while i < len(self.data):
-            print('iterator on yield')
-            yield list(self.data)[i:i+num]
+            yield list(self.data.items())[i:i+num]
             i += num
-            print('iterator off yield')
 
 
 
@@ -134,9 +122,9 @@ if __name__ == "__main__":
     john_record.add_phone("1234567890")
     john_record.add_phone("5555555555")
     book.add_record(john_record)
-    
-    # Додавання запису John до адресної книги
-    john_record.days_to_birthday()
+
+    # Кількість днів до дня народження
+    print(john_record.days_to_birthday())
 
     # Створення та додавання нових записів дляперевірки ітератора
     for i in range(10):
@@ -147,8 +135,7 @@ if __name__ == "__main__":
     # Виведення записів через ітератор
     itr = book.iterator(4)
     for i in itr:
-        print(i)
-
+        print(str(i))
 
     # Додавання запису John до адресної книги
     #book.add_record(john_record)
